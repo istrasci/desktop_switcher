@@ -1,3 +1,85 @@
 #!/usr/bin/env bash
 
-echo "Desktop Switcher"
+function usage() {
+    echo
+    echo "Desktop directory switcher v1.0.0"
+    echo "Set \$HOME/Desktop to be a symlink to another directory for easy"
+    echo "viewing of files in a window manager's desktop.  Existing"
+    echo "\$HOME/Desktop directory can be backed up first."
+    echo
+    echo "Usage:  desktop Directory|Options"
+    echo
+    echo "Options:"
+    echo "    -h, --help    Print this help, then exit"
+    echo
+    echo "    -l, --list,"
+    echo "    -s, --show    Print out the current DESKTOP directory"
+    echo
+    echo "Example:"
+    echo "    desktop ~/Pictures    View your pictures on the desktop"
+}
+
+
+# Check Arguments
+function check_num_args() {
+    # Exactly one (1) is required
+    if [ ! $NUM_ARGS -eq 1 ]
+    then
+        usage
+        exit 1
+    fi
+}
+
+
+# Check to see if we're doing some meta actions
+function check_args_for_meta() {
+    case $ARG in
+    # Check if we match a "show" option
+    -l|--list|-s|--show)
+    if [[ -L "$HOME/Desktop" ]]
+    then
+        echo "$HOME/Desktop is currently set to $(readlink $HOME/Desktop)"
+    else
+        echo "$HOME/Desktop is a directory"
+    fi
+    exit 0
+    ;;
+    # Check if we match -h --help
+    -h|--help)
+    usage
+    exit 0
+    esac
+
+    #echo "Desktop directory switcher:  Illegal argument.  Run \`desktop -h\` to show help."
+    #exit 1
+}
+
+
+
+# Start script
+NUM_ARGS=$#
+ARG=$1
+check_num_args
+
+check_args_for_meta
+
+
+
+# If we make it this far, try to make the switch
+
+# First check if the HOME/Desktop directory already exists
+# Prompt to backup to another directory
+# If user declines, exit
+
+# Check if the argument is actually a directory and
+# If not, error message and exit
+
+# If so, check if readable
+# If not, error message and exit
+
+# Check if writable
+# If not, display warning message, but continue anyway
+
+# If HOME/Desktop already exists as a symlink, delete it
+
+# Create new symlink from HOME/Desktop to destination directory
