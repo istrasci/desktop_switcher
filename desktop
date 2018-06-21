@@ -137,6 +137,8 @@ function link_desktop() {
     echo
     echo "$HOME/Desktop symlinked to $ARG"
     echo
+
+    # For the time being, you will have to refresh the desktop manually  ;(
 }
 
 
