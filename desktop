@@ -1,3 +1,155 @@
 #!/usr/bin/env bash
 
-echo "Desktop Switcher"
+function usage() {
+    echo
+    echo "Desktop directory switcher v1.0.0"
+    echo "Set \$HOME/Desktop to be a symlink to another directory for easy"
+    echo "viewing of files in a window manager's desktop.  Existing"
+    echo "\$HOME/Desktop directory can be backed up first."
+    echo
+    echo "Usage:  desktop Directory|Options"
+    echo
+    echo "Options:"
+    echo "    -h, --help    Print this help, then exit"
+    echo
+    echo "    -l, --list,"
+    echo "    -s, --show    Print out the current DESKTOP directory"
+    echo
+    echo "Example:"
+    echo "    desktop ~/Pictures    View your pictures on the desktop"
+    echo
+}
+
+
+# Check Arguments
+function check_num_args() {
+    # Exactly one (1) is required
+    if [ ! $NUM_ARGS -eq 1 ]
+    then
+        usage
+        exit 1
+    fi
+}
+
+
+# Check to see if we're doing some meta actions
+function check_args_for_meta() {
+    case $ARG in
+    # Check if we match a "show" option
+    -l|--list|-s|--show )
+    echo
+    if [[ -L "$HOME/Desktop" ]]
+    then
+        echo "$HOME/Desktop is currently set to $(readlink $HOME/Desktop)"
+    elif [[ ! -e "$HOME/Desktop" ]]
+    then
+        echo "$HOME/Desktop does not exist"
+    else
+        echo "$HOME/Desktop is not a symlink"
+    fi
+    echo
+    exit 0
+    ;;
+    # Check if we match -h --help
+    -h|--help )
+    usage
+    exit 0
+    esac
+}
+
+
+# 
+function link_desktop() {
+    echo
+
+    # First check if the argument is actually a directory and
+    # If not, error message and exit
+    if [[ ! -d "$ARG" ]]
+    then
+    echo "$ARG is not a directory.  Cannot create symlink.  Aborting..."
+    echo
+    exit 4
+    fi
+
+    # If target directory 
+    if [[ ! -r "$ARG" ]]
+    then
+        echo "$ARG is not readable.  Aborting..."
+        echo
+        exit 2
+    fi
+
+    # If HOME/Desktop already exists as a symlink, delete it
+    if [[ -L "$HOME/Desktop" ]]
+    then
+        `rm -rf $HOME/Desktop`
+    # Check if the HOME/Desktop directory already exists and is readable
+    # Prompt to backup to another directory
+    # If user declines, just delete it
+    # They can also cancel the whole thing
+    elif [[ -d "$HOME/Desktop" ]] || [[ -f "$HOME/Desktop" ]]
+    then
+
+        # Prompt and actions
+        while true; do
+            echo "$HOME/Desktop already exists."
+            read -p "Would you like to make a backup first?  (Y)es, (n)o, (c)ancel:  " response
+            case $response in
+                # Cancelling - just exit
+                c|cancel )
+                echo "Exiting..."
+                echo
+                exit 0
+                ;;
+                # Yes - Create backup
+                Y|Yes )
+                echo "Moving $HOME/Desktop to $HOME/Desktop_OLD"
+                `mv $HOME/Desktop $HOME/Desktop_OLD`
+                if [[ ! $? -eq 0 ]]
+                then
+                    echo "Error creating backup.  Aborting..."
+                    exit 3
+                fi
+                break
+                ;;
+                # No - Do not create backup, but proceed anyway
+                n|no )
+                break
+                ;;
+                # Any other input - will go back to top of loop
+                * )
+                echo "Invalid selection"
+                ;;
+            esac
+        done
+    fi
+
+    # Check if target directory is writable
+    # If not, display warning message, but continue anyway
+    if [[ ! -w "$ARG" ]]
+    then
+        echo "** Warning: $ARG is not writable, so you will not be able"
+        echo "            to create/modify/delete files on the desktop."
+    fi
+
+    # Create new symlink from HOME/Desktop to destination directory
+    `ln -s $ARG $HOME/Desktop`
+    echo
+    echo "$HOME/Desktop symlinked to $ARG"
+    echo
+
+    # For the time being, you will have to refresh the desktop manually  ;(
+}
+
+
+
+#
+# Execute script
+#
+
+NUM_ARGS=$#
+ARG=$1
+
+check_num_args
+check_args_for_meta
+link_desktop
