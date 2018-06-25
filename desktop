@@ -2,7 +2,7 @@
 
 function usage() {
     echo
-    echo "Desktop directory switcher v1.0.0"
+    echo "Desktop directory switcher v$VERSION"
     echo "Set \$HOME/Desktop to be a symlink to another directory for easy"
     echo "viewing of files in a window manager's desktop.  Existing"
     echo "\$HOME/Desktop directory can be backed up first."
@@ -11,7 +11,7 @@ function usage() {
     echo
     echo "Options:"
     echo "    -e, --empty   Use the default, non-writable empty"
-    echo "                  directory ($HOME/.desktop-switcher-empty/)."
+    echo "                  directory (\$HOME/.desktop-switcher-empty/)."
     echo "    -h, --help    Print this help, then exit"
     echo
     echo "    -l, --list,"
@@ -173,6 +173,8 @@ function link_desktop() {
 
 NUM_ARGS=$#
 ARG=$1
+
+VERSION="1.1.0"
 EMPTY_DIR="$HOME/.desktop-switcher-empty/"
 
 check_num_args
