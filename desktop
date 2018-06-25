@@ -2,7 +2,7 @@
 
 function usage() {
     echo
-    echo "Desktop directory switcher v1.0.0"
+    echo "Desktop directory switcher v$VERSION"
     echo "Set \$HOME/Desktop to be a symlink to another directory for easy"
     echo "viewing of files in a window manager's desktop.  Existing"
     echo "\$HOME/Desktop directory can be backed up first."
@@ -10,6 +10,8 @@ function usage() {
     echo "Usage:  desktop Directory|Options"
     echo
     echo "Options:"
+    echo "    -e, --empty   Use the default, non-writable empty"
+    echo "                  directory (\$HOME/.desktop-switcher-empty/)."
     echo "    -h, --help    Print this help, then exit"
     echo
     echo "    -l, --list,"
@@ -35,6 +37,11 @@ function check_num_args() {
 # Check to see if we're doing some meta actions
 function check_args_for_meta() {
     case $ARG in
+    # Check if we match an "empty" option
+    -e|--empty )
+    create_empty_directory
+    ARG="$HOME/.desktop-switcher-empty/"
+    ;;
     # Check if we match a "show" option
     -l|--list|-s|--show )
     echo
@@ -58,12 +65,30 @@ function check_args_for_meta() {
 }
 
 
-# 
+# Create and/or make non-writable an empty directory for
+# linking so that we can have a clean desktop.  Location is
+# $HOME/.desktop-switcher-empty/.
+function create_empty_directory() {
+    # Create this directory if it doesn't exist
+    if [[ ! -d "$EMPTY_DIR" ]]
+    then
+        `mkdir $EMPTY_DIR`
+    fi
+
+    # Make it non-writable
+    if [[ -w "$EMPTY_DIR" ]]
+    then
+        `chmod -w $EMPTY_DIR`
+    fi
+}
+
+
+# Make the $HOME/Desktop a symlink to the directory specified.
 function link_desktop() {
     echo
 
-    # First check if the argument is actually a directory and
-    # If not, error message and exit
+    # First check if the argument is actually a directory, and
+    # if not, error message and exit
     if [[ ! -d "$ARG" ]]
     then
     echo "$ARG is not a directory.  Cannot create symlink.  Aborting..."
@@ -89,7 +114,6 @@ function link_desktop() {
     # They can also cancel the whole thing
     elif [[ -d "$HOME/Desktop" ]] || [[ -f "$HOME/Desktop" ]]
     then
-
         # Prompt and actions
         while true; do
             echo "$HOME/Desktop already exists."
@@ -149,6 +173,9 @@ function link_desktop() {
 
 NUM_ARGS=$#
 ARG=$1
+
+VERSION="1.1.0"
+EMPTY_DIR="$HOME/.desktop-switcher-empty/"
 
 check_num_args
 check_args_for_meta
